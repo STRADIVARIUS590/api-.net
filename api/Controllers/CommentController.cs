@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using api.Data;
 using api.DTOs;
 using api.DTOs.Comment;
+using api.Interfaces;
 using api.Mappers;
 using api.Models;
+using api.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,16 +23,23 @@ namespace api.Controllers
     public class CommentController : ControllerBase
     {
         private readonly ApplicationDBContext _applicationDBContext;
-        public CommentController(ApplicationDBContext applicationDBContext)
+        private readonly ICommentRepository _commentRepository;
+        public CommentController(ApplicationDBContext applicationDBContext, ICommentRepository commentRepository)
         {
            _applicationDBContext = applicationDBContext;   
+            _commentRepository = commentRepository;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var comments = await _applicationDBContext.Comment.ToListAsync();
-            return Ok(comments);
+            // var comments = await _applicationDBContext.Comment.ToListAsync();
+            // return Ok(comments);
+
+            var comments = await _commentRepository.GETallAsync();
+            var commentsDto = comments.Select(comment => comment.ToCommentDto());
+
+            return Ok(commentsDto);
         }
 
         [HttpGet("{id}")]
